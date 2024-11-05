@@ -3,14 +3,13 @@
 #include <mutex>
 #include <condition_variable>
 #include <array>
-#include <ctime>
+#include <chrono>
 
-// Classe TicTacToe
 class TicTacToe {
 private:
     std::array<std::array<char, 3>, 3> board; // Tabuleiro do jogo
-    std::mutex board_mutex;
-    std::condition_variable turn_cv; // Sincronização entre turnos
+    std::mutex board_mutex; // Controle de acesso ao tabuleiro
+    std::condition_variable turn_cv; // Alternância entre turnos
     char current_player; // Jogador atual ('X' ou 'O')
     bool game_over;
     char winner;
@@ -32,7 +31,7 @@ public:
 
     bool make_move(char player, int row, int col) {
         std::lock_guard<std::mutex> lock(board_mutex);
-        if (board[row][col] == ' ' && !game_over) {
+        if (board[row][col] == ' ' && !game_over) { // Verifica se a célula está livre
             board[row][col] = player;
             if (check_win(player)) {
                 game_over = true;
@@ -89,7 +88,6 @@ public:
     }
 };
 
-// Classe Player
 class Player {
 private:
     TicTacToe& game;
@@ -135,9 +133,8 @@ private:
     }
 };
 
-// Função principal
 int main() {
-    std::srand(std::time(0)); // Inicializa a semente para geração aleatória
+    std::srand(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count())); // Inicializa o gerador de números aleatórios
 
     TicTacToe game;
     Player player1(game, 'X', "sequential");
